@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+
+{% block title %}Szczegóły{% endblock %}
+{% block content %}
+    {% if pokemon %}
+        <div class="jumbotron"><h1>Pokemon {{ pokemon.nazwa }}</h1></div>
+        <table class="table table-bordered table stripped">
+            <tbody>
+                <tr>
+                    <td>Numer</td>
+                    <td>{{ pokemon.numer }}</td>
+                </tr>
+                <tr>
+                    <td>Nazwa</td>
+                    <td>{{ pokemon.nazwa }}</td>
+                </tr>
+                {% if pokemon.ewolucja %}
+                    <tr>
+                        <td>Ewolucja</td>
+                        <td><a href="{% url 'details' pokemon.ewolucja.numer %}" class="btn btn-success">{{ pokemon.ewolucja.nazwa }}</a></td>
+                    </tr>
+                {% endif %}
+                <tr>
+                    <td>Atak 1</td>
+                    <td>{{ pokemon.rodzaj1 }}</td>
+                </tr>
+                {% if pokemon.rodzaj2 %}
+                    <tr>
+                        <td>Atak 2</td>
+                        <td>{{ pokemon.rodzaj2 }}</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+
+        {% if pokemon.comment_set %}
+            <table class="table table-bordered table-stripped">
+                <thead>
+                    <tr>
+                        <th colspan="3" >Komentarze</th>
+                    </tr>
+                    <tr>
+                        <th>Komentujący</th>
+                        <th>Treść</th>
+                        <th>Data</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in pokemon.comment_set.all %}
+                        <tr>
+                            <td>{{ c.author }}</td>
+                            <td>{{ c.content }}</td>
+                            <td>{{ c.date }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>Brak komentarzu</p>
+        {% endif %}
+        <div class="container">
+        <div class="jumbotron"><h3>Skomentuj</h3></div>
+        {% if form %}
+            <form method="POST" action="{% url 'details' pokemon.numer %}">
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                    <ul>
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+                {% for field in form %}
+                    <div id="{{ field.auto_id }}_container">
+                        {{ field.help_text }}
+                        <div>
+                            {{ field.label_tag }} {{ field }}
+                        </div>
+                        <div id="{{ field.auto_id }}_errors">
+                            {{ field.errors }}
+                        </div>
+                    </div>
+                {% endfor %}
+                <input id="save_contact" type="submit" value="Zapisz" class="btn btn-success"/>
+            </form>
+        {% else %}
+            <h3>Brak formy</h3>
+        {% endif %}
+        </div>
+    {% else %}
+        <h1>Oszukujesz, takiego pokemona nie ma</h1>
+    {% endif %}
+
+    {% if usage %}
+    <div class="container">
+    <div class="jumbotron"><h3>Mieżenie skuteczności przeciwników</h3></div>
+
+    <script>
+        function f1() {
+            var url_mask =
+                    "{% url 'ajax_power_count' pokemon_id=12345 attack_id=67899%}".replace(/12345/, {{ pokemon.numer }}).replace(/67899/, $('#select_attack').val());
+            $.ajax({
+                url : url_mask,
+                type : "GET",
+
+                success : function(json) {
+                    $('#result').text(json.power);
+                },
+                error : function(xhr, errmsg, err) { }
+
+            })
+        }
+    </script>
+        <table class="table table-bordered">
+            <tbody>
+                <tr>
+                    <td>Atak: </td>
+                    <td>
+                        <select id="select_attack" class="form-control">
+                            {% for u in usage %}
+                                <option value="{{ u.atak }}">{{ u.atak }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td>
+                        <button id="count" onclick="f1()" class="form-group btn btn-success">Oblicz</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Wynik: </td>
+                    <td colspan="2" id="result">Jeszcze o nic nie pytałeś</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+{% endblock %}
