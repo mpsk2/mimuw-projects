@@ -1,0 +1,225 @@
+{% extends 'base.html' %}
+
+{% block title %}Obwody wyborcze{% endblock %}
+
+{% block header %}
+<div class="jumbotron">
+    <h1 class="text-center">Obwody wyborcze</h1>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<div class="text-center">
+    {% if circuit %}
+        <h1>Obwód: {{ circuit.name }}</h1>
+    {% else %}
+        <h1>Cała Polska</h1>
+    {% endif %}
+</div>
+
+<script>
+    // using jQuery
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie != '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        console.log(cookieValue);
+        return cookieValue;
+    }
+
+    var csrftoken = getCookie('csrftoken');
+    function csrfSafeMethod(method) {
+        // these HTTP methods do not require CSRF protection
+        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
+    function sameOrigin(url) {
+        // test that a given url is a same-origin URL
+        // url could be relative or scheme relative or absolute
+        var host = document.location.host; // host + port
+        var protocol = document.location.protocol;
+        var sr_origin = '//' + host;
+        var origin = protocol + sr_origin;
+        // Allow absolute or scheme relative URLs to same origin
+        return (url == origin || url.slice(0, origin.length + 1) == origin + '/') ||
+            (url == sr_origin || url.slice(0, sr_origin.length + 1) == sr_origin + '/') ||
+            // or any other URL that isn't scheme relative or absolute i.e relative.
+            !(/^(\/\/|http:|https:).*/.test(url));
+    }
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!csrfSafeMethod(settings.type) && sameOrigin(settings.url)) {
+                // Send the token to same-origin, relative URLs only.
+                // Send the token only if the method warrants CSRF protection
+                // Using the CSRFToken value acquired earlier
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            }
+        }
+    });
+
+    function f1(id) {
+        console.log("clicked");
+        console.log(id);
+        var url_mask = "{% url 'ajax_get_hello' commission_id=12345 %}".replace(/12345/, id.toString());
+        console.log(url_mask);
+        $.ajax({
+            url : url_mask,
+            type : "GET",
+
+            success : function(json) {
+                console.log($('#bg' + id.toString()));
+                console.log('#bg' + id.toString());
+                $('#bg' + id.toString()).val(json.ballots_got);
+                $('#atv' + id.toString()).val(json.allowed_to_voted);
+                $('#hbg' + id.toString()).val(json.ballots_got);
+                $('#hatv' + id.toString()).val(json.allowed_to_voted);
+                $('#bg' + id.toString()).prop('disabled', false);
+                $('#atv' + id.toString()).prop('disabled', false);
+                $('#edit' + id.toString()).hide();
+                $('#save' + id.toString()).show();
+                $('#resign' + id.toString()).show();
+                console.log(json);
+                console.log("success");
+            },
+
+            error : function(xhr, errmsg, err) {
+            }
+        })
+    }
+
+    function f3(id) {
+        console.log("clicked");
+        console.log(id);
+        var url_mask = "{% url 'ajax_get_hello' commission_id=12345 %}".replace(/12345/, id.toString());
+        console.log(url_mask);
+        $.ajax({
+            url : url_mask,
+            type : "GET",
+
+            success : function(json) {
+                console.log($('#bg' + id.toString()));
+                console.log('#bg' + id.toString());
+                $('#bg' + id.toString()).val(json.ballots_got);
+                $('#atv' + id.toString()).val(json.allowed_to_voted);
+                $('#hbg' + id.toString()).val(json.ballots_got);
+                $('#hatv' + id.toString()).val(json.allowed_to_voted);
+                $('#bg' + id.toString()).prop('disabled', true);
+                $('#atv' + id.toString()).prop('disabled', true);
+                console.log(json);
+                console.log("success");
+                $('#edit' + id.toString()).show();
+                $('#save' + id.toString()).hide();
+                $('#resign' + id.toString()).hide();
+            },
+
+            error : function(xhr, errmsg, err) {
+            }
+        })
+    }
+    function f2(id) {
+        console.log("clicked");
+        console.log(id);
+        console.log(csrftoken);
+        var url_mask = "{% url 'ajax_post_commission' commission_id=12345 %}".replace(/12345/, id.toString());
+        $.ajax({
+            url : url_mask,
+            type : "POST",
+            data : {
+                allowed_to_voted : $('#atv' + id.toString()).val(),
+                ballots_got : $('#bg' + id.toString()).val(),
+                old_allowed_to_voted : $('#hatv' + id.toString()).val(),
+                old_ballots_got : $('#hbg' + id.toString()).val(),
+                csrfmiddlewaretoken : csrftoken },
+
+            success : function(json) {
+                console.log('success');
+                console.log(json);
+                console.log($('#bg' + id.toString()));
+                console.log('#bg' + id.toString());
+                $('#bg' + id.toString()).val(json.ballots_got);
+                $('#atv' + id.toString()).val(json.allowed_to_voted);
+                $('#hbg' + id.toString()).val(json.ballots_got);
+                $('#hatv' + id.toString()).val(json.allowed_to_voted);
+                console.log($('#error_message').html());
+                $('#error_message').html(json.error_message);
+                $('#error_message').text(json.error_message);
+                $('h3:first').text(json.error_message);
+                $('#bg' + id.toString()).prop('disabled', true);
+                $('#atv' + id.toString()).prop('disabled', true);
+                console.log("success");
+                $('#edit' + id.toString()).show();
+                $('#save' + id.toString()).hide();
+                $('#resign' + id.toString()).hide();
+            },
+
+            error : function(xhr, errmsg, err) {
+                console.log(xhr);
+                console.log(errmsg);
+                console.log(err);
+            }
+        })
+    }
+</script>
+
+<div>
+    <div><h3 id="error_message">Brak błędu</h3></div>
+    {% if circuits %}
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Number</th>
+                <th>Nazwa</th>
+                <!--<th>Głosy Kaczyńskiego</th>-->
+                <!--<th>Głosy Komorowskiego</th>-->
+                {% if next_circuit %}
+                    <th>Szczegóły</th>
+                {% else %}
+                    <th>Karty</th>
+                    <th>Uprawnieni</th>
+                    <th>Akcja</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in circuits %}
+                <tr>
+                    <td>{{ c.number }}</td>
+                    <td>{{ c.name }}</td>
+                    <!--<td>{{ c.kaczynski_votes }}</td>-->
+                    <!--<td>{{ c.komorowski_votes }}</td>-->
+                    {% if next_circuit %}
+                        <td><a href="{% url 'circuits' c.number %}"><i class="fa fa-search"></i></a></td>
+                    {% else %}
+                        <td><input type="number" id="bg{{ c.id }}" value="{{ c.ballots_got|default_if_none:'0' }}" disabled></td>
+                        <td><input type="number" id="atv{{ c.id }}" value="{{ c.allowed_to_voted|default_if_none:'0' }}" disabled></td>
+                        <td>
+                            <input type="hidden" id="hbg{{ c.id }}" value="{{ c.ballots_got|default_if_none:'0' }}">
+                            <input type="hidden" id="hatv{{ c.id }}" value="{{ c.allowed_to_voted|default_if_none:'0' }}">
+                            <button id="edit{{ c.id }}" onclick="f1('{{ c.id }}')">
+                                <i class="fa fa-edit"></i>
+                            </button>
+                            <button id="save{{ c.id }}" onclick="f2('{{ c.id }}')" hidden>
+                                <i class="fa fa-save"></i>
+                            </button>
+                            <button id="resign{{ c.id }}" onclick="f3('{{ c.id }}')" hidden>
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+</div>
+
+{% endblock %}

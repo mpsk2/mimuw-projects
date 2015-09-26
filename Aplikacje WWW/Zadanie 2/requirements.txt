@@ -1,0 +1,5 @@
+Django==1.8rc1
+BeautifulSoup4
+gunicorn
+psycopg2
+

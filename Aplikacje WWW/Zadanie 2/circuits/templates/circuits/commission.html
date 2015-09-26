@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Szczegóły komisji{% endblock %}
+
+{% block content %}
+
+<h1>Szczegóły komisji</h1>
+<h2>Powrót wzwyż do <a href="{%  url 'circuit' commission.circuit.number %}">{{ commission.circuit.name }}</a>
+</h2>
+<table class="commission-details">
+	<tbody>
+		<tr>
+			<td>Numer komisji</td>
+			<td>{{ commission.number }}</td>
+		<tr>
+			<td>Nazwa komisji</td>
+			<td>{{ commission.name }}</td>
+		</tr>
+		<tr>
+			<td>Obwód komisji</td>
+			<td>{{ commission.circuit }}</td>
+		</tr>
+		<tr>
+			<td>Głosy kaczyńskiego</td>
+			<td>{{ commission.kaczynski_votes }}</td>
+		<tr>
+			<td>Głosy komorowskiego</td>
+			<td>{{ commission.komorowski_votes }}</td>
+		<tr>
+			<td>Liczba otrzymanych kart do głosowania</td>
+			<td>{% if commission.ballots_got %}{{ commission.ballots_got }}{% else %}0{% endif %}</td>
+		<tr>
+			<td>Liczba uprawnionych do głosowania</td>
+			<td>{% if commission.allowed_to_vote %}{{ commission.allowed_to_vote }}{% else %}0{% endif %}</td>
+		
+		</tr>
+		<tr>
+			<td>
+				<a href="{% url 'edit_commission' commission.id %}">
+					<button type="button" class="btn btn-default">Edytuj komisję</button>
+				</a>
+			</td>
+		</tr>
+	</tbody>
+</table>
+
+
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Okręgi | Edycja
+{% if commission %} okręgu {{ commission.name }} z {{ commission.circuit }}
+{% else %} nieistniejącego okręgu
+{% endif %}
+{% endblock %}
+
+{% block content %}
+
+{% if commission %}
+<h1>Edytuj okręg wyborczy</h1>
+<h2>Stare dane</h2>
+<p>Nazwa komisji: {{ commission.name }}</p>
+<p>Nazwa okręgu: {{ commission.circuit }}</p>
+<p>Liczba kart dostanych {{ commission.ballots_got }}</p>
+<p>Liczba uprawnionych do głosowania {{ commission.allowed_to_vote }}</p>
+{% if error %}
+<h2>Niestety wystąpił błąd: {{ error }}, wypełnij jeszcze raz</h2>
+{% endif %}
+<h2>Edycja</h2>
+<div>
+	{% if form %}
+	<form action="{% url 'edit_commission' commission.id %}" method="POST" class="form-horizontal">
+		{% csrf_token %}
+		<div class="form-group">
+			<label for="ballots_id" class="col-sm-4 control-label">Otrzymane karty do głosowanie:</label>
+			<div class="col-sm-8">
+			<input id="ballots_id" class="form-control" name="ballots_got" type="number" value="{{ commission.ballots_got }}" />
+			</div>
+		</div>
+		<div class="form-group">
+			<label for="allowed_id" class="col-sm-4 control-label">Uprawnieni do głosowania:</label>
+			<div class="col-sm-8">
+			<input id="allowed_id" class="form-control" name="allowed_to_vote" type="number" value="{{ commission.allowed_to_vote }}" />
+			</div>
+		</div>
+			<input type="hidden" name="commission_id" value="{{ commission.id }}" />
+			<input type="hidden" name="old_ballots_got" value="{{ commission.ballots_got }}" />
+			<input type="hidden" name="old_allowed_to_vote" value="{{ commission.allowed_to_vote }}" />
+		<div class="form-group">
+			<div class="col-sm-offset-4 col-sm-8">
+			<input type="submit" class="btn btn-default" value="OK">
+			</div>
+		</div>
+	</form>
+	{% else %}
+	<p>Nie ma</p>
+	{% endif %}
+</div>
+{% else %}
+<p>Blok nie istnieje, ale to i tak nie powinno się wyświetlć</p>
+
+{% endif %}
+
+{% endblock %}

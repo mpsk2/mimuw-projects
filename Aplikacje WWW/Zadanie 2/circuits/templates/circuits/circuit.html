@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Okręg wyborczy{% endblock %}
+
+{% block content %}
+
+<h1>Szczegóły o obwodzie</h1>
+
+{% if circuit %}
+    <h2>Konkretny obwód<br>
+    {{ circuit.name }}</h2>
+
+    <h3>Powrót wzwyż do
+    {% if circuit.super_circuit %}
+        <a href="{%  url 'circuit' circuit.super_circuit.number %}">{{ circuit.super_circuit.name }}</a>
+    {% else %}
+        <a href="{%  url 'circuit_index' %}">Cała polska</a>
+    {% endif %}
+    </h3>
+{% else %}
+    <h2>Cała Polska</h2>
+{% endif %}
+
+{% if data %}
+    <div class="container">
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr class="custom-table-top-header">
+                    <td colspan="4">Poszczególne {{ data_name }}</td>
+                </tr>
+                <tr>
+                    <td>Numer</td>
+                    <td>Nazwa</td>
+                    <td>Wynik kaczyńskiego</td>
+                    <td>Wynik komorowskiego</td>
+                </tr>
+            </thead>
+            <tbody>
+            {% for c in data %}
+                <tr>
+                    <td>{{ c.number }}</td>
+                    {% if data_name = 'okregi' %}
+                    <td><a href="{% url 'circuit' c.number %}">{{ c.name }}</a></td>
+                    {% else %}
+                    <td><a href="{% url 'commission' c.id %}">{{ c.name }}</a></td>
+                    {% endif %}
+                    <td>{{ c.kaczynski_votes }}</td>
+                    <td>{{ c.komorowski_votes }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="container">
+          <script type="text/javascript">
+  		window.onload = function () {
+    			var chart = new CanvasJS.Chart("chartContainer",
+    			{
+				axisX: {
+					labelAutoFit: true,
+					labelFontSize: 1,
+	
+					},
+      				toolTip: {
+        				shared: true
+      					},
+      				axisY:{
+        				title: "procentowe"
+      					},
+      				data:[
+					{
+					type: "stackedBar100",
+					showInLegend: true,
+					name: "Kaczyński",
+					dataPoints: [{% for c in data %}
+						{ y: {{ c.kaczynski_votes }}, label: "{{ c.name }}" },
+					{% endfor %}
+						]},
+					{
+					type: "stackedBar100",
+					showInLegend: true,
+					name: "Komorowski",
+					dataPoints: [{% for c in data %}
+						{ y: {{ c.komorowski_votes }}, label: "{{ c.name }}" },
+					{% endfor %}
+						]}
+				]
+    			});
+		chart.render();
+		}
+		</script>
+		<div id="chartContainer" style="height: 480px; width: 100%;">
+		</div>
+    </div>
+{% else %}
+    <!-- we do not care, probably commissions are next -->
+{% endif %}
+{% endblock %}
